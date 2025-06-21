@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package customers.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message CreateCustomerRequest {
+    string username = 1;
+    string alias_name = 2;
+    string email = 3;
+
+}
+
+message Customer {
+    int64 id = 1;
+    string username = 2;
+    string alias_name = 3;
+    string email = 4;
+    google.protobuf.Timestamp created_at = 5;
+}
+
+message CreateCustomerResponse {
+    Customer customer = 1;
+}
+
+message GetCustomerRequest {
+    int64 id = 1;
+}
+
+message GetCustomerResponse {
+    Customer customer = 1;
+}
+
+message DeleteCustomerRequest {
+    int64 id = 1;
+}
+
+message DeleteCustomerResponse {
+    bool success = 1;
+}
+
+
+service CustomersService {
+    rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse);
+    rpc GetCustomer(GetCustomerRequest) returns (GetCustomerResponse);
+    rpc DeleteCustomer(DeleteCustomerRequest) returns (DeleteCustomerResponse);
+}

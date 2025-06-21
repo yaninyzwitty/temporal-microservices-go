@@ -1,0 +1,12 @@
+customer_server:
+  port: 50051
+database:
+  username: token
+  token: token
+  path: ./secure-connect.zip
+  keyspace: temporal_microservice_keyspace
+  hosts:
+    - "127.0.0.1:9042"
+    - "127.0.0.1:9043"
+    - "127.0.0.1:9044"
+  localDataCenter: "scylla-net"

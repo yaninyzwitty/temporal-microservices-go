@@ -1,0 +1,39 @@
+---
+services:
+  # three scylla db nodes
+  scylla-1:
+    image: scylladb/scylla:latest
+    container_name: scylla-1
+    command: --smp 1 --memory 750M --broadcast-address=scylla-1 --broadcast-rpc-address=scylla-1
+    ports:
+      - "9042:9042" # scylla-1 CQL port
+    networks:
+      scylla-net:
+        aliases:
+          - scylla-1
+
+  scylla-2:
+    image: scylladb/scylla:latest
+    container_name: scylla-2
+    command: --smp 1 --memory 750M --seeds=scylla-1 --broadcast-address=scylla-1 --broadcast-rpc-address=scylla-1
+    ports:
+      - "9043:9042" # scylla-2 CQL port
+    networks:
+      scylla-net:
+        aliases:
+          - scylla-2
+
+  scylla-3:
+    image: scylladb/scylla:latest
+    container_name: scylla-3
+    command: --smp 1 --memory 750M --seeds=scylla-1 --broadcast-address=scylla-3 --broadcast-rpc-address=scylla-3
+    ports:
+      - "9044:9042" # scylla-3 CQL port
+    networks:
+      scylla-net:
+        aliases:
+          - scylla-3
+
+networks:
+  scylla-net:
+    driver: bridge
