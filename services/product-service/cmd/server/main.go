@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/yaninyzwitty/temporal-microservice-go/gen/customers/v1/customersv1connect"
-	"github.com/yaninyzwitty/temporal-microservice-go/services/customer-service/controller"
-	"github.com/yaninyzwitty/temporal-microservice-go/services/customer-service/repository"
+	"github.com/yaninyzwitty/temporal-microservice-go/gen/products/v1/v1connect"
+	"github.com/yaninyzwitty/temporal-microservice-go/services/product-service/cmd/controllers"
+	"github.com/yaninyzwitty/temporal-microservice-go/services/product-service/cmd/repository"
 	"github.com/yaninyzwitty/temporal-microservice-go/shared/pkg"
 	database "github.com/yaninyzwitty/temporal-microservice-go/shared/pkg/db"
 	"github.com/yaninyzwitty/temporal-microservice-go/shared/pkg/helpers"
@@ -24,12 +24,12 @@ import (
 )
 
 func main() {
-	config := pkg.Config{}
-	if err := config.LoadConfig("config.yaml"); err != nil {
+	cfg := pkg.Config{}
+
+	if err := cfg.LoadConfig("config.yaml"); err != nil {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
 	}
-
 	if err := snowflake.InitSonyFlake(); err != nil {
 		slog.Error("failed to initialize snowflake", "error", err)
 		os.Exit(1)
@@ -41,8 +41,8 @@ func main() {
 	}
 
 	astraCfg := &database.AstraConfig{
-		Username: config.Database.Username,
-		Path:     config.Database.Path,
+		Username: cfg.Database.Username,
+		Path:     cfg.Database.Path,
 		Token:    helpers.GetEnvOrDefault("ASTRA_TOKEN", ""),
 	}
 
@@ -54,24 +54,20 @@ func main() {
 	}
 	defer session.Close()
 
-	customerRepository := repository.NewCustomerRepository(session)
+	productServiceAddr := fmt.Sprintf("localhost:%d", cfg.ProductServer.Port)
+	productRepository := repository.NewProductRepository(session)
+	productController := controllers.NewProductController(productRepository)
 
-	customerServiceAddr := fmt.Sprintf("localhost:%d", config.CustomerServer.Port)
-
-	// Initialize controller and mux
-	customerController := controller.NewCustomerController(customerRepository)
-	customersPath, customersHandler := customersv1connect.NewCustomersServiceHandler(customerController)
+	productPath, productHandler := v1connect.NewProductServiceHandler(productController)
 
 	mux := http.NewServeMux()
-	mux.Handle(customersPath, customersHandler)
+	mux.Handle(productPath, productHandler)
 
-	// Setup HTTP server with h2c (HTTP/2 cleartext)
 	server := &http.Server{
-		Addr:    customerServiceAddr,
+		Addr:    productServiceAddr,
 		Handler: h2c.NewHandler(mux, &http2.Server{}),
 	}
 
-	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
@@ -93,7 +89,7 @@ func main() {
 	}()
 
 	// Start HTTP server
-	slog.Info("starting HTTP server", "address", customerServiceAddr, "pid", os.Getpid())
+	slog.Info("starting HTTP server", "address", productServiceAddr, "pid", os.Getpid())
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		slog.Error("server failed", "error", err)
 		os.Exit(1)

@@ -1,6 +1,7 @@
-package db
+package database
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"time"
@@ -9,57 +10,41 @@ import (
 	"github.com/gocql/gocql"
 )
 
-type CassandraConfig struct {
-	Hosts      []string
-	Keyspace   string
-	MaxRetries int
-	Username   string
-	Token      string
-	Path       string
-	Timeout    time.Duration
+// AstraConfig holds the configuration for connecting to Astra DB.
+type AstraConfig struct {
+	Username string
+	Path     string
+	Token    string
 }
 
-func NewCassandra(config *CassandraConfig) (*gocql.Session, error) {
-	// If any of the cloud (Astra) fields are missing, assume local setup
-	if config.Username == "" || config.Token == "" || config.Path == "" {
-		var session *gocql.Session
-		var err error
+// AstraMethods defines the methods for interacting with Astra DB.
+type AstraMethods interface {
+	Connect(ctx context.Context, cfg *AstraConfig, timeout time.Duration) (*gocql.Session, error)
+}
 
-		for attempt := 1; attempt <= config.MaxRetries; attempt++ {
-			cluster := gocql.NewCluster(config.Hosts...)
-			cluster.Keyspace = config.Keyspace
-			cluster.Consistency = gocql.Quorum
-			cluster.Timeout = config.Timeout
+// AstraDB represents a connection to Astra DB.
+type AstraDB struct{}
 
-			session, err = cluster.CreateSession()
-			if err == nil {
-				// Test connection
-				if pingErr := session.Query("SELECT now() FROM system.local").Exec(); pingErr == nil {
-					slog.Info("Connected to local Cassandra/Scylla")
-					return session, nil
-				}
-				session.Close()
-				err = fmt.Errorf("ping failed after session creation")
-			}
+// NewAstraDB initializes and returns an AstraDB instance that implements AstraMethods.
+func NewAstraDB() AstraMethods {
+	return &AstraDB{}
+}
 
-			slog.Error("Failed to create local Cassandra session", "attempt", attempt, "error", err)
-			time.Sleep(time.Duration(attempt) * time.Second)
-		}
-
-		return nil, fmt.Errorf("exceeded max retries for local Cassandra connection")
-	}
-
-	// Use Astra DB setup
-	cluster, err := gocqlastra.NewClusterFromBundle(config.Path, config.Username, config.Token, config.Timeout)
+// Connect establishes a connection to Astra DB and returns a session.
+func (db *AstraDB) Connect(ctx context.Context, cfg *AstraConfig, timeout time.Duration) (*gocql.Session, error) {
+	// Create a new Astra DB cluster configuration using the provided credentials and timeout.
+	cluster, err := gocqlastra.NewClusterFromBundle(cfg.Path, cfg.Username, cfg.Token, timeout)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize Astra cluster: %w", err)
+		return nil, fmt.Errorf("failed to create Astra DB cluster from bundle: %w", err)
 	}
 
-	session, err := cluster.CreateSession()
+	// Open a new session using the cluster configuration.
+	session, err := gocql.NewSession(*cluster)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Astra Cassandra session: %w", err)
+		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	slog.Info("Connected to Astra Cassandra")
+	slog.Info("Successfully connected to Astra DB")
+
 	return session, nil
 }

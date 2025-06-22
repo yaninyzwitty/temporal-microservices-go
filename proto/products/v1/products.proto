@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+package products.v1;
+
+
+        message Product {
+        int64 id = 1;
+        string name = 2;
+        string description = 3;
+        double price = 4;
+        string currency = 5;
+        string image_url = 6;
+        int32 stock = 7;
+        google.protobuf.Timestamp created_at = 8;
+        google.protobuf.Timestamp updated_at = 9;
+        }
+
+        message CreateProductRequest {
+        string name = 1;
+        string description = 2;
+        double price = 3;
+        string currency = 4;
+        string image_url = 5;
+        int32 stock = 6;
+        }
+
+        message CreateProductResponse {
+        Product product = 1;
+        }
+        message GetProductResponse {
+        Product product = 1;
+        }
+
+        message GetProductRequest {
+        string id = 1;
+        }
+
+        message DeleteProductRequest {
+            string id = 1;
+
+        }
+
+        message DeleteProductResponse {
+            bool deleted = 2;
+        }
+
+
+        service ProductService {
+        rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+        rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+        rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+        }

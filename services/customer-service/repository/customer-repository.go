@@ -20,11 +20,11 @@ func NewCustomerRepository(session *gocql.Session) *CustomerRepository {
 
 func (r *CustomerRepository) CreateCustomer(customer *customersv1.Customer) error {
 	query := `
-		INSERT INTO customers (id, username, alias_name, email, created_at)
+		INSERT INTO products_keyspace.customers (id, username, alias_name, email, created_at)
 		VALUES (?, ?, ?, ?, ?)
 	`
 
-	return r.session.Query(query, customer.Id, customer.Username, customer.AliasName, customer.Email, customer.CreatedAt).Exec()
+	return r.session.Query(query, customer.Id, customer.Username, customer.AliasName, customer.Email, customer.CreatedAt.AsTime()).Exec()
 
 }
 
@@ -32,7 +32,7 @@ func (r *CustomerRepository) GetCustomer(id int64) (*customersv1.Customer, error
 	var createdAt time.Time
 	query := `
 		SELECT id, username, alias_name, email, created_at
-		FROM customers
+		FROM products_keyspace.customers
 		WHERE id = ?
 	`
 
@@ -49,7 +49,7 @@ func (r *CustomerRepository) GetCustomer(id int64) (*customersv1.Customer, error
 
 func (r *CustomerRepository) DeleteCustomer(id int64) error {
 	query := `
-		DELETE FROM customers
+		DELETE FROM products_keyspace.customers
 		WHERE id = ?
 	`
 
