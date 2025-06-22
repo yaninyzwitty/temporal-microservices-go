@@ -25,6 +25,7 @@ func NewCustomerController(customerRepository *repository.CustomerRepository) *C
 }
 
 func (c *CustomerController) CreateCustomer(ctx context.Context, req *connect.Request[v1.CreateCustomerRequest]) (*connect.Response[v1.CreateCustomerResponse], error) {
+	// create-customer - http://localhost:50051/customers.v1.CustomersService/CreateCustomer
 	if req.Msg.Username == "" || req.Msg.AliasName == "" || req.Msg.Email == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username, alias name and email are required"))
 	}
@@ -53,6 +54,7 @@ func (c *CustomerController) CreateCustomer(ctx context.Context, req *connect.Re
 	}, nil
 }
 func (c *CustomerController) GetCustomer(ctx context.Context, req *connect.Request[v1.GetCustomerRequest]) (*connect.Response[v1.GetCustomerResponse], error) {
+	// get-customer - http://localhost:50051/customers.v1.CustomersService/GetCustomer
 	if req.Msg.Id <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("id is required"))
 	}
@@ -69,6 +71,7 @@ func (c *CustomerController) GetCustomer(ctx context.Context, req *connect.Reque
 	}, nil
 }
 func (c *CustomerController) DeleteCustomer(ctx context.Context, req *connect.Request[v1.DeleteCustomerRequest]) (*connect.Response[v1.DeleteCustomerResponse], error) {
+	// delete-customer - http://localhost:50051/customers.v1.CustomersService/DeleteCustomer
 	if req.Msg.Id <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("id is required"))
 	}

@@ -6,6 +6,7 @@ require (
 	connectrpc.com/connect v1.18.1
 	github.com/datastax/gocql-astra v0.0.0-20250516142328-482592316433
 	github.com/gocql/gocql v1.7.0
+	github.com/joho/godotenv v1.5.1
 	github.com/sony/sonyflake v1.2.1
 	golang.org/x/net v0.41.0
 	google.golang.org/protobuf v1.36.6
@@ -19,8 +20,10 @@ require (
 	github.com/datastax/go-cassandra-native-protocol v0.0.0-20220706104457-5e8aad05cf90 // indirect
 	github.com/deepmap/oapi-codegen v1.12.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
+	github.com/stretchr/testify v1.10.0 // indirect
 	go.uber.org/atomic v1.8.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect

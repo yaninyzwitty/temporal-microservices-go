@@ -10,6 +10,7 @@ import (
 type Config struct {
 	CustomerServer CustomerServer `yaml:"customer_server"`
 	Database       Database       `yaml:"database"`
+	ProductServer  ProductServer  `yaml:"products-server"`
 }
 
 type Database struct {
@@ -24,6 +25,10 @@ type Database struct {
 }
 
 type CustomerServer struct {
+	Port int `yaml:"port"`
+}
+
+type ProductServer struct {
 	Port int `yaml:"port"`
 }
 
