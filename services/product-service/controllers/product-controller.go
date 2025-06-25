@@ -9,7 +9,7 @@ import (
 	"connectrpc.com/connect"
 	v1 "github.com/yaninyzwitty/temporal-microservice-go/gen/products/v1"
 	v1connect "github.com/yaninyzwitty/temporal-microservice-go/gen/products/v1/v1connect"
-	"github.com/yaninyzwitty/temporal-microservice-go/services/product-service/cmd/repository"
+	"github.com/yaninyzwitty/temporal-microservice-go/services/product-service/repository"
 	"github.com/yaninyzwitty/temporal-microservice-go/shared/pkg/snowflake"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

@@ -2,6 +2,8 @@ customer_server:
   port: 50051
 products-server:
   port: 50052
+order-server:
+  port: 50053
 database:
   username: token
   token: token
