@@ -12,18 +12,21 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/yaninyzwitty/temporal-microservice-go/gen/products/v1/v1connect"
-	"github.com/yaninyzwitty/temporal-microservice-go/services/product-service/controllers"
-	"github.com/yaninyzwitty/temporal-microservice-go/services/product-service/repository"
+	"github.com/yaninyzwitty/temporal-microservice-go/gen/orders/v1/ordersv1connect"
+	"github.com/yaninyzwitty/temporal-microservice-go/services/order-service/cmd/controller"
+	"github.com/yaninyzwitty/temporal-microservice-go/services/order-service/repository"
 	"github.com/yaninyzwitty/temporal-microservice-go/shared/pkg"
 	database "github.com/yaninyzwitty/temporal-microservice-go/shared/pkg/db"
 	"github.com/yaninyzwitty/temporal-microservice-go/shared/pkg/helpers"
 	"github.com/yaninyzwitty/temporal-microservice-go/shared/pkg/snowflake"
+	"go.temporal.io/sdk/client"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
 
 func main() {
+	// implement order service
+
 	cfg := pkg.Config{}
 
 	if err := cfg.LoadConfig("config.yaml"); err != nil {
@@ -54,17 +57,25 @@ func main() {
 	}
 	defer session.Close()
 
-	productServiceAddr := fmt.Sprintf("localhost:%d", cfg.ProductServer.Port)
-	productRepository := repository.NewProductRepository(session)
-	productController := controllers.NewProductController(productRepository)
+	temporalClient, err := client.Dial(client.Options{})
+	if err != nil {
+		slog.Error("Unable to create client", "error", err)
+		os.Exit(1)
+	}
 
-	productPath, productHandler := v1connect.NewProductServiceHandler(productController)
+	defer temporalClient.Close()
+
+	orderServiceAddr := fmt.Sprintf("localhost:%d", cfg.ProductServer.Port)
+	orderRepository := repository.NewOrderRepository(temporalClient)
+	orderController := controller.NewOrderController(orderRepository)
 
 	mux := http.NewServeMux()
-	mux.Handle(productPath, productHandler)
+
+	orderPath, orderHandler := ordersv1connect.NewOrderServiceHandler(orderController)
+	mux.Handle(orderPath, orderHandler)
 
 	server := &http.Server{
-		Addr:    productServiceAddr,
+		Addr:    orderServiceAddr,
 		Handler: h2c.NewHandler(mux, &http2.Server{}),
 	}
 
@@ -88,8 +99,8 @@ func main() {
 		}
 	}()
 
-	// Start HTTP server
-	slog.Info("starting HTTP server", "address", productServiceAddr, "pid", os.Getpid())
+	// start http server
+	slog.Info("starting HTTP server", "address", orderServiceAddr, "pid", os.Getpid())
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		slog.Error("server failed", "error", err)
 		os.Exit(1)

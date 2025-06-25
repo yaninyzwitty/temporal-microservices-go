@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package orders.v1;
+
+import "google/protobuf/timestamp.proto";
+
+
+// Service for managing orders.
+service OrderService {
+  // Creates a new order.
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+
+  // Retrieves an order by its ID.
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+
+  // Updates an existing order.
+  rpc UpdateOrder(UpdateOrderRequest) returns (UpdateOrderResponse);
+}
+
+// Represents a single order.
+message Order {
+  int64 order_id = 1;
+  int64 customer_id = 2;
+  repeated OrderItem items = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  OrderStatus status = 6;
+}
+
+// Represents an item within an order.
+message OrderItem {
+  int64 product_id = 1;
+  int32 quantity = 2;
+  double price = 3;
+}
+
+// Enum for the status of an order.
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_CREATED = 1;
+  ORDER_STATUS_PROCESSING = 2;
+  ORDER_STATUS_SHIPPED = 3;
+  ORDER_STATUS_DELIVERED = 4;
+  ORDER_STATUS_CANCELLED = 5;
+}
+
+// Request to create a new order.
+message CreateOrderRequest {
+  int64 customer_id = 1;
+  repeated OrderItem items = 2;
+}
+
+// Response for a create order request.
+message CreateOrderResponse {
+  Order order = 1;
+}
+
+// Request to retrieve an order.
+message GetOrderRequest {
+  int64 order_id = 1;
+}
+
+// Response for a get order request.
+message GetOrderResponse {
+  Order order = 1;
+}
+
+// Request to update an order.
+message UpdateOrderRequest {
+  int64 order_id = 1;
+  OrderStatus status = 2;
+  repeated OrderItem items = 3; // Allows for updating the items in an order
+}
+
+// Response for an update order request.
+message UpdateOrderResponse {
+  Order order = 1;
+}

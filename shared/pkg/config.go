@@ -11,6 +11,11 @@ type Config struct {
 	CustomerServer CustomerServer `yaml:"customer_server"`
 	Database       Database       `yaml:"database"`
 	ProductServer  ProductServer  `yaml:"products-server"`
+	OrderServer    OrderServer    `yaml:"order-server"`
+}
+
+type OrderServer struct {
+	Port int `yaml:"port"`
 }
 
 type Database struct {
